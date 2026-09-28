@@ -24,7 +24,7 @@ Built as a hands-on project to practice: Matplotlib chart types (bar, pie, scatt
 1. **Restaurants dominate:** Restaurants are the largest category in Tampa (2,187 businesses), Clearwater (528), St. Petersburg (282) and Plant City (84). Second place is Food in Tampa, St. Petersburg and Plant City, and Shopping in Clearwater.
 2. **Category mix by city:** The mix is similar everywhere; the differences show up in ranks 4–5 (Home Services in Tampa, Clearwater and Plant City, Beauty & Spas in Tampa, Clearwater and St. Petersburg, Automotive only in Plant City).
 3. **Review count vs. rating:** No meaningful relationship (Pearson r ≈ 0.07) — businesses with many reviews are not noticeably better or worse rated.
-4. **Rating distribution:** [FILL IN: share of businesses rated 4.0 or higher, and the most common rating]
+4. **Rating distribution:** share of businesses rated 4.0 - 4.5, and the most common rating
 
 ---
 
