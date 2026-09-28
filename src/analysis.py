@@ -17,7 +17,7 @@ def rating_distribution(df):
     plt.xlabel('Number of reviews (log scale)')
     plt.ylabel('Star rating')
     plt.xscale('log')
-    plt.title('Do Popular Florida Businesses Rate Higher? Not Really', loc='left', fontweight='bold')
+    plt.title('Do More Reviews Mean Rate Higher?', loc='left', fontweight='bold')
     plt.tight_layout(pad=5)
     plt.savefig('outputs/rating_distribution.png', dpi=200, bbox_inches='tight')
     plt.show()
@@ -26,9 +26,8 @@ def rating_distribution(df):
 def city_compare(df):
     top4 = df['city'].value_counts().head(4).index
         
-    fig, axes = plt.subplots(2, 2, figsize=(15, 10), sharey=True)
+    fig, axes = plt.subplots(2, 2, figsize=(14, 9), sharey=True)
     axes = axes.flatten()
-    fig.supxlabel('Share of businesses')
     fig.suptitle('Restaurants Lead the Business Mix in Every Florida City Studied',
                 x=0.01, ha='left', fontsize=16, fontweight='bold')
 
@@ -39,6 +38,7 @@ def city_compare(df):
         ax.set_title(name)
         ax.set_xlabel(None)
         ax.set_ylabel('Normalized business count')
+        
 
     plt.tight_layout(pad=5)
     plt.savefig('outputs/business_categories.png', dpi=200, bbox_inches='tight')
