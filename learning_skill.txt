@@ -1,0 +1,249 @@
+================================================================
+LEARNING SKILL GUIDE — Neighborhood Pulse
+================================================================
+
+HOW TO USE THIS GUIDE
+----------------------------------------------------------------
+Work through sections in order. Each step names exactly one file
+to open and exactly what to build. Get charts working in the
+notebook first, then move any reusable plotting function into
+src/plots.py.
+
+----------------------------------------------------------------
+⚠️ DATA FEASIBILITY NOTE — READ THIS BEFORE YOU START
+----------------------------------------------------------------
+Scraping live business-listing sites (Yelp, Google Maps, etc.)
+is not a good starting point for two real reasons: (1) these
+sites are heavily JavaScript-rendered — the same client-side-
+rendering problem covered in the Spotify Mood Ring project — so
+requests + BeautifulSoup will see almost no data; and (2) their
+Terms of Service explicitly prohibit scraping, and they run
+aggressive bot detection that will block your IP quickly.
+
+THE FIX — same skills, a legitimate data source:
+Use the Yelp Open Dataset — a large, free, official dataset
+Yelp publishes specifically for academic and learning use
+(businesses, reviews, ratings, categories, all as downloadable
+JSON files, no scraping or API key required). Download it from
+Yelp's dataset page, and place the business and review JSON
+files in data/raw/. This gives you real ratings, categories,
+review counts, and price levels for hundreds of thousands of
+real businesses — exactly the columns this project needs — with
+zero scraping risk.
+
+Alternative if you want a specific city: many cities publish an
+open-data portal with a business license or registration dataset
+(search "<your city> open data business license") — these are
+plain CSV downloads, no scraping needed either, though they
+usually won't include star ratings (only category and location).
+
+----------------------------------------------------------------
+SECTION 1 — LOADING THE DATASET (PANDAS BASICS)
+----------------------------------------------------------------
+GOAL: Load the Yelp Open Dataset's business file into a usable
+DataFrame.
+
+STEPS:
+1. Open notebooks/01_load_explore.ipynb.
+2. The Yelp business file is JSON-LINES format (one JSON object
+   per line, not one big JSON array) — load it with
+   pd.read_json(path, lines=True), not a plain json.load().
+3. Filter to ONE city or a small set of cities you want to
+   analyze (the full dataset spans many cities) using boolean
+   indexing on the 'city' column.
+4. Run df.info() — check which columns you actually need:
+   name, categories, stars, review_count, price (if present),
+   city, is_open.
+5. Note that 'categories' is a single comma-separated string
+   (e.g. "Restaurants, Mexican, Bars") — you'll need to split
+   this into a primary category in Section 2.
+
+SELF-CHECK:
+[ ] You filtered to a specific city/region BEFORE doing any
+    further processing, so you're working with a manageable
+    row count (thousands, not hundreds of thousands)
+[ ] You've printed 5 example values of the 'categories' column
+    and understand its exact format
+
+DONE WHEN: you have a filtered DataFrame for your chosen
+city/cities with all the columns listed above present and
+non-empty.
+
+----------------------------------------------------------------
+SECTION 2 — CLEANING: EXTRACTING A PRIMARY CATEGORY
+----------------------------------------------------------------
+GOAL: Turn the messy multi-category string into one clean,
+plottable category column.
+
+STEPS:
+1. Open notebooks/02_clean_data.ipynb.
+2. Write a function get_primary_category(categories_str) in
+   src/clean.py that splits the comma-separated string and
+   returns the FIRST category as the business's primary type.
+   (Print 10 examples first to confirm categories are always
+   comma-separated the same way.)
+3. Apply it to create a new column, primary_category.
+4. Run primary_category.value_counts() and decide on a
+   manageable set of top categories to focus on (e.g. the top
+   10 by count) — group everything else into "Other" using
+   .where() or .apply() with a simple lambda.
+5. Handle missing 'price' values (common in this dataset) by
+   leaving them as NaN for now — you'll exclude them explicitly
+   in any price-related chart rather than silently filling them.
+
+SELF-CHECK:
+[ ] get_primary_category() lives in src/clean.py with a
+    docstring showing an example input/output
+[ ] You can state exactly how many businesses fall into "Other"
+    after grouping, and that this number is a reasonable
+    minority of the dataset (not most of it)
+
+DONE WHEN: primary_category is a clean column with a manageable
+number of distinct values (10-15), ready for charting.
+
+----------------------------------------------------------------
+SECTION 3 — BAR CHARTS AND PIE CHARTS
+----------------------------------------------------------------
+GOAL: Show category distribution and average rating by category.
+
+STEPS:
+1. Open notebooks/03_bar_pie_category.ipynb.
+2. Set your plotting style ONCE at the top: import matplotlib
+   and call plt.style.use(...) or set your preferred rcParams —
+   this is the only place you configure style in this notebook.
+3. Build a bar chart of df['primary_category'].value_counts(),
+   SORTED descending (value_counts() already sorts this way by
+   default — confirm it, don't re-sort alphabetically).
+   Add plt.title(), plt.xlabel(), plt.ylabel(), and rotate
+   x-tick labels 45 degrees with plt.xticks(rotation=45).
+4. Build df.groupby('primary_category')['stars'].mean() as a
+   bar chart, sorted by rating descending this time (use
+   .sort_values() explicitly).
+5. Build ONE pie chart of category share of total businesses,
+   using ONLY your top 5-6 categories (grouping the rest into
+   "Other" first) — more slices than that becomes unreadable.
+6. Write one sentence in a markdown cell explaining why you
+   chose bar over pie (or vice versa) for the category-count
+   chart specifically.
+
+SELF-CHECK:
+[ ] Every chart has a title and both axis labels — no bare plots
+[ ] The bar chart is sorted by value, not alphabetically
+[ ] The pie chart uses 6 or fewer slices
+
+DONE WHEN: you have one category-count bar chart, one
+average-rating bar chart, and one pie chart, each saved to
+outputs/figures/ as a PNG.
+
+----------------------------------------------------------------
+SECTION 4 — SCATTER PLOTS AND HISTOGRAMS
+----------------------------------------------------------------
+GOAL: Explore rating vs. review count, and rating distribution.
+
+STEPS:
+1. Open notebooks/04_histograms_scatter.ipynb.
+2. Build a scatter plot: x = review_count, y = stars. Since
+   review_count is usually heavily right-skewed, set
+   plt.xscale('log') and compare the plot with and without the
+   log scale — note which one actually shows the relationship
+   more clearly.
+3. Color the scatter points by primary_category using the c=
+   parameter mapped through a categorical color scheme, and add
+   a legend.
+4. Build a histogram of the 'stars' column (plt.hist() or
+   df['stars'].plot(kind='hist')) — describe its shape in a
+   markdown cell (most review platforms skew toward 4-5 stars;
+   confirm whether that's true here).
+5. Build a second histogram of review_count on a log-scale
+   x-axis, and compare its shape to the same histogram on a
+   linear x-axis.
+
+SELF-CHECK:
+[ ] The log-scale scatter plot and histogram both have their
+    axis explicitly labeled as "log scale" in the axis title,
+    so a reader isn't misled
+[ ] You've written a one-sentence answer to: "do highly-reviewed
+    businesses rate better, worse, or about the same?"
+
+DONE WHEN: you have one scatter plot (log x-axis, colored by
+category, with legend) and two histograms (stars, and
+review_count on both linear and log scales), all saved to
+outputs/figures/.
+
+----------------------------------------------------------------
+SECTION 5 — SUBPLOTS (COMBINED DASHBOARD)
+----------------------------------------------------------------
+GOAL: Combine four charts into one dashboard figure.
+
+STEPS:
+1. Open notebooks/05_subplots_dashboard.ipynb.
+2. Create a 2x2 grid with fig, axes = plt.subplots(2, 2,
+   figsize=(12, 10)).
+3. Recreate four charts from earlier sections, but plot each
+   into its assigned axes cell instead of a fresh figure:
+   axes[0,0] = stars histogram, axes[0,1] = review_count
+   histogram (log x-axis), axes[1,0] = category count bar chart,
+   axes[1,1] = review_count vs stars scatter.
+4. Give each subplot its own ax.set_title(), and add one overall
+   fig.suptitle('Neighborhood Pulse: <your city> Business Report').
+5. Call plt.tight_layout() and note what visibly changes before
+   vs after (overlapping titles/labels should resolve).
+6. Save the WHOLE FIGURE as one PNG with fig.savefig(...) — not
+   four separate images.
+
+SELF-CHECK:
+[ ] All four subplots render without overlapping text
+[ ] The saved PNG is one combined image, verified by opening the
+    file itself, not just the notebook's inline display
+
+DONE WHEN: outputs/figures/dashboard.png exists as one clean,
+readable 2x2 combined report.
+
+----------------------------------------------------------------
+SECTION 6 — PANDAS + MATPLOTLIB INTEGRATION
+----------------------------------------------------------------
+GOAL: Compare the "manual" plt approach against Pandas' built-in
+.plot() method for the same chart.
+
+STEPS:
+1. In any earlier notebook (or a new cell in
+   notebooks/05_subplots_dashboard.ipynb), recreate your
+   category-count bar chart TWO ways:
+   a. Manually: plt.bar(x_values, y_values)
+   b. Pandas-native:
+      df['primary_category'].value_counts().plot(kind='bar')
+   Confirm both produce the same chart shape.
+2. Recreate your average-rating-by-category chart using
+   groupby().plot(): 
+   df.groupby('primary_category')['stars'].mean()\
+     .sort_values().plot(kind='bar')
+3. Pass an existing Axes object into a Pandas plot call so it
+   renders inside one cell of a subplots() grid:
+   df['stars'].plot(kind='hist', ax=axes[0,0]) — confirm this
+   still works correctly inside your Section 5 dashboard.
+
+SELF-CHECK:
+[ ] You can point to one chart built the "manual" way and the
+    identical chart built the Pandas-native way, side by side
+[ ] You can explain, in one sentence, when you'd reach for raw
+    Matplotlib instead of df.plot() (e.g. when you need very
+    specific customization that .plot() doesn't expose easily)
+
+DONE WHEN: you've rebuilt at least 2 charts using df.plot()
+instead of raw plt calls, with matching results, and successfully
+passed ax= into one of them for use inside a subplot grid.
+
+================================================================
+DEFINITION OF DONE FOR THE WHOLE PROJECT
+================================================================
+[ ] Yelp Open Dataset (or a city open-data portal dataset)
+    loaded and filtered to a specific city/region
+[ ] get_primary_category() lives in src/clean.py with a clean,
+    manageable set of category values
+[ ] Bar chart, pie chart, scatter plot, and histogram each built
+    at least once, all with proper titles/labels/gridlines
+[ ] One combined 2x2 subplot dashboard saved as a single PNG
+[ ] At least 2 charts rebuilt using df.plot() instead of raw
+    Matplotlib calls, including one passed into a subplot via ax=
+[ ] README's "Sample Finding" section filled in with a real
+    result, not a placeholder
