@@ -37,7 +37,7 @@ def city_compare(df):
         ax.tick_params(axis='x', rotation=65)
         ax.set_title(name)
         ax.set_xlabel(None)
-        ax.set_ylabel('Normalized business count')
+        ax.set_ylabel('Normalized counts')
         
 
     plt.tight_layout(pad=5)
