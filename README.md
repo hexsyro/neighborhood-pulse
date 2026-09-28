@@ -64,7 +64,7 @@ neighborhood-pulse/
 ## 🛠️ Setup
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/hexsyro/neighborhood-pulse
 cd neighborhood-pulse
 python -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate
